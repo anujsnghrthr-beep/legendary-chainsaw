@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ASR Grade Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Karla:wght@400;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Karla',sans-serif;background:linear-gradient(160deg,#1a2035 0%,#0f1a2e 100%);min-height:100vh;padding:20px 12px 60px;}
+  input{font-family:'Karla',sans-serif;outline:none;}
+  input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appearance:none;}
+  input[type=number]{-moz-appearance:textfield;}
+  input:focus{border-color:#1565c0!important;}
+
+  /* ── App title ── */
+  .app-title{text-align:center;margin-bottom:20px;}
+  .app-title h1{font-family:'EB Garamond',serif;font-size:42px;color:#fff;letter-spacing:5px;line-height:1;}
+  .app-title p{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:5px;margin-top:4px;}
+  .app-title small{font-size:10px;color:rgba(255,255,255,0.2);display:block;margin-top:4px;}
+
+  .sheet{max-width:680px;margin:0 auto;}
+
+  /* ── University header ── */
+  .uni-card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.4);margin-bottom:14px;}
+  .uni-header{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 16px 10px;}
+  .uni-logo{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#a07840,#5c3d1e);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .uni-logo span{color:#f5deb3;font-family:'EB Garamond',serif;font-size:15px;font-weight:700;}
+  .uni-name-wrap{text-align:center;}
+  .uni-tagline{font-size:7.5px;color:#8b6914;letter-spacing:2px;}
+  .uni-name{font-family:'EB Garamond',serif;font-size:20px;color:#3d2b00;letter-spacing:2px;}
+  .report-title{background:#3d2b00;color:#fff;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:2.5px;padding:5px 0;}
+
+  /* ── Student info ── */
+  .info-grid{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .info-field label{font-size:9px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:3px;}
+  .info-field input{width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:5px;font-size:12px;color:#222;}
+  .info-field.full{grid-column:1/-1;}
+
+  /* ── Subject card ── */
+  .subject-card{background:#fff;border-radius:10px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.25);border-left:4px solid #ccc;transition:border-color 0.3s;}
+  .card-header{background:#f5f5f5;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #e8e8e8;}
+  .sub-num{background:#3d2b00;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;letter-spacing:0.5px;white-space:nowrap;}
+  .card-header input{padding:6px 8px;border:1px solid #ddd;border-radius:5px;font-size:12px;background:#fff;color:#222;}
+  .inp-code{width:82px;font-family:'Courier New',monospace!important;}
+  .inp-name{flex:1;min-width:100px;}
+  .inp-credits{width:44px;text-align:center;}
+  .lbl-cr{font-size:10px;color:#888;font-weight:600;}
+  .type-btn{padding:5px 11px;border-radius:12px;border:none;cursor:pointer;font-weight:700;font-size:10px;letter-spacing:0.5px;transition:opacity 0.2s;white-space:nowrap;}
+  .type-btn:hover{opacity:0.75;}
+  .del-btn{background:#fff0f0;border:1px solid #f5c6c6;border-radius:5px;color:#c0392b;cursor:pointer;padding:5px 9px;font-size:13px;font-weight:700;margin-left:auto;}
+  .del-btn:hover{background:#ffd7d7;}
+
+  .card-body{padding:12px;}
+
+  /* ── Mini marks table ── */
+  .section-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;margin-top:4px;}
+  .marks-table{width:100%;border-collapse:collapse;margin-bottom:10px;}
+  .marks-table th{padding:6px 4px;text-align:center;font-size:10px;font-weight:700;color:#444;border:1px solid #ddd;letter-spacing:0.3px;}
+  .marks-table td{padding:4px 3px;border:1px solid #e0e0e0;text-align:center;vertical-align:middle;}
+  .marks-table .row-label{font-weight:700;font-size:11px;padding:5px 8px;}
+  .marks-table .val{font-size:12px;font-weight:600;color:#444;}
+  .marks-table .min-val{font-size:11px;color:#888;}
+  .marks-table input{width:100%;padding:7px 4px;text-align:center;border:1.5px solid #ddd;border-radius:5px;font-size:13px;font-family:'Karla',sans-serif;background:#fafafa;color:#222;}
+  .marks-table input.warn{border-color:#e05050!important;background:#fff0f0!important;color:#c0392b!important;}
+  .warn-msg{font-size:9px;color:#c0392b;margin-top:2px;}
+  .subtotal-row td{font-weight:700;font-size:12px;}
+
+  /* ── Result bar ── */
+  .result-bar{margin-top:10px;padding:10px 14px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .result-total{display:flex;align-items:baseline;gap:6px;}
+  .result-total .lbl{font-size:11px;color:#666;font-weight:600;}
+  .result-total .num{font-size:22px;font-weight:800;font-family:'Courier New',monospace;}
+  .result-total .denom{font-size:11px;color:#999;}
+  .result-right{display:flex;align-items:center;gap:10px;}
+  .grade-box{text-align:center;}
+  .grade-box .lbl{font-size:9px;color:#888;letter-spacing:1px;}
+  .grade-box .val{font-size:26px;font-weight:800;line-height:1;}
+  .backlog-tag{background:#c0392b;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;}
+
+  /* ── Add subject btn ── */
+  .add-btn{width:100%;padding:14px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;margin-bottom:20px;box-shadow:0 2px 10px rgba(46,125,50,0.4);font-family:'Karla',sans-serif;transition:background 0.2s;}
+  .add-btn:hover{background:#1b5e20;}
+
+  /* ── Summary card ── */
+  .summary-card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.35);}
+  .summary-title{background:#3d2b00;color:#fff;padding:8px 16px;font-weight:700;font-size:10px;letter-spacing:2px;}
+  .summary-table{width:100%;border-collapse:collapse;font-size:11px;}
+  .summary-table th{padding:7px 8px;text-align:center;font-weight:700;font-size:10px;color:#555;border:1px solid #e0e0e0;background:#f0f0f0;letter-spacing:0.5px;}
+  .summary-table td{padding:6px 8px;border:1px solid #e8e8e8;text-align:center;vertical-align:middle;}
+  .summary-table .td-name{text-align:left;font-size:11px;color:#333;}
+  .summary-table .td-code{font-family:monospace;font-size:10px;color:#666;}
+
+  /* ── Footer result row ── */
+  .result-footer{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid #e0e0e0;}
+  .result-cell{padding:12px 6px;text-align:center;border-right:1px solid #e0e0e0;}
+  .result-cell .rc-label{font-size:8.5px;color:#666;font-weight:700;letter-spacing:1px;margin-bottom:4px;}
+  .result-cell .rc-val{font-size:22px;font-weight:800;line-height:1;letter-spacing:1px;}
+
+  /* ── Grade key ── */
+  .grade-key{margin-top:16px;display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+  .grade-key span{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;border:1px solid;}
+
+  .footer-note{text-align:center;margin-top:14px;font-size:9px;color:rgba(255,255,255,0.18);letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<div class="app-title">
+  <h1>ASR</h1>
+  <p>GRADE CALCULATOR</p>
+  <small>Indus University · CIE + ESE → SGPA / CGPA</small>
+</div>
+
+<div class="sheet">
+
+  <!-- University Header Card -->
+  <div class="uni-card">
+    <div class="uni-header">
+      <div class="uni-logo"><span>IU</span></div>
+      <div class="uni-name-wrap">
+        <div class="uni-tagline">ज्ञानेन प्रकाशयती जगत्</div>
+        <div class="uni-name">INDUS UNIVERSITY</div>
+      </div>
+    </div>
+    <div class="report-title">PROVISIONAL SEMESTER GRADE REPORT</div>
+    <div class="info-grid">
+      <div class="info-field full"><label>Name</label><input id="i-name" value="RATHORE ANUJSINGH BRIJMOHANSINGH"/></div>
+      <div class="info-field"><label>Enrollment Number</label><input id="i-enroll" value="IU2541230652" style="font-family:'Courier New',monospace"/></div>
+      <div class="info-field"><label>Exam Year</label><input id="i-examyear" value="Nov/Dec-2025 (REGULAR)"/></div>
+      <div class="info-field full"><label>Program / Course</label><input id="i-program" value="B.TECH COMPUTER SCIENCE & ENGINEERING"/></div>
+      <div class="info-field full"><label>Institute</label><input id="i-institute" value="INDUS INSTITUTE OF TECHNOLOGY AND ENGINEERING"/></div>
+      <div class="info-field"><label>Semester</label><input id="i-semester" value="1" style="width:60px"/></div>
+    </div>
+  </div>
+
+  <!-- Subject Cards Container -->
+  <div id="subjects-container"></div>
+
+  <button class="add-btn" onclick="addSubject()">+ ADD SUBJECT</button>
+
+  <!-- Summary Card -->
+  <div class="summary-card">
+    <div class="summary-title">SEMESTER RESULT SUMMARY</div>
+    <div style="overflow-x:auto;">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>CODE</th><th>SUBJECT</th><th>CR</th><th>THEORY</th><th>PRACTICAL</th><th>TOTAL</th><th>GRADE</th><th>GP</th>
+          </tr>
+        </thead>
+        <tbody id="summary-body"></tbody>
+      </table>
+    </div>
+    <div class="result-footer" id="result-footer">
+      <div class="result-cell" id="rc-backlogs" style="background:#e8e8e8;">
+        <div class="rc-label">BACKLOGS</div><div class="rc-val">—</div>
+      </div>
+      <div class="result-cell" id="rc-sgpa" style="background:#dae8fc;">
+        <div class="rc-label">SGPA</div><div class="rc-val">—</div>
+      </div>
+      <div class="result-cell" id="rc-cgpa" style="background:#dae8fc;">
+        <div class="rc-label">CGPA</div><div class="rc-val">—</div>
+      </div>
+      <div class="result-cell" id="rc-result" style="background:#e8e8e8;">
+        <div class="rc-label">RESULT</div><div class="rc-val">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grade Key -->
+  <div class="grade-key" id="grade-key"></div>
+  <div class="footer-note">ASR Calculator · Indus University</div>
+</div>
+
+<script>
+/* ══════════════ GRADE TABLE ══════════════ */
+const GRADES = [
+  {min:91,grade:"O",  pts:10,bg:"#c6efce",fg:"#1a5c1f",bd:"#82c785"},
+  {min:81,grade:"A+", pts:9, bg:"#dae8fc",fg:"#1a3a6b",bd:"#7eb8e8"},
+  {min:71,grade:"A",  pts:8, bg:"#dae8fc",fg:"#1a3a6b",bd:"#7eb8e8"},
+  {min:61,grade:"B+", pts:7, bg:"#fff2cc",fg:"#7d5c00",bd:"#f0c040"},
+  {min:51,grade:"B",  pts:6, bg:"#fff2cc",fg:"#7d5c00",bd:"#f0c040"},
+  {min:40,grade:"P",  pts:5, bg:"#e8e8e8",fg:"#3d3d3d",bd:"#aaa"},
+  {min:0, grade:"F",  pts:0, bg:"#ffc7ce",fg:"#9c0006",bd:"#e05050"},
+];
+function gradeFor(pct){ return GRADES.find(g=>pct>=g.min)||GRADES[GRADES.length-1]; }
+
+/* ══════════════ STATE ══════════════ */
+let subjectIdCounter = 0;
+const subjects = [];
+
+const TYPES = ["both","theory","practical","ese_only"];
+const TYPE_LABEL = {both:"TH + PR",theory:"TH Only",practical:"PR Only",ese_only:"ESE Only"};
+const TYPE_COLOR = {both:"#1565c0",theory:"#2e7d32",practical:"#6a1b9a",ese_only:"#e65100"};
+
+const DEFAULT_DATA = [
+  {code:"CH0011",  name:"ENGINEERING CHEMISTRY",   credits:"4",type:"both",      cieTh:"38",eseTh:"10",ciePr:"17",esePr:"19",eseOnly:""},
+  {code:"CV0053",  name:"ENVIRONMENTAL SCIENCE",   credits:"2",type:"theory",    cieTh:"20",eseTh:"17",ciePr:"",  esePr:"",  eseOnly:""},
+  {code:"EN0112",  name:"TECHNICAL COMMUNICATION", credits:"3",type:"theory",    cieTh:"35",eseTh:"24",ciePr:"",  esePr:"",  eseOnly:""},
+  {code:"MA0112",  name:"MULTIVARIABLE CALCULUS",  credits:"4",type:"theory",    cieTh:"24",eseTh:"16",ciePr:"",  esePr:"",  eseOnly:""},
+  {code:"ME0211",  name:"ENGINEERING GRAPHICS",    credits:"3",type:"both",      cieTh:"24",eseTh:"12",ciePr:"35",esePr:"29",eseOnly:""},
+  {code:"MME0102", name:"MATERIAL SCIENCE",        credits:"3",type:"theory",    cieTh:"29",eseTh:"16",ciePr:"",  esePr:"",  eseOnly:""},
+  {code:"SS0002",  name:"INDIAN KNOWLEDGE SYSTEM", credits:"3",type:"ese_only",  cieTh:"",  eseTh:"",  ciePr:"",  esePr:"",  eseOnly:"67"},
+];
+
+/* ══════════════ COMPUTE ══════════════ */
+function compute(s){
+  const cr=parseFloat(s.credits);
+  if(!cr||cr<=0) return null;
+  const hasT=s.type==="theory"||s.type==="both";
+  const hasP=s.type==="practical"||s.type==="both";
+  const hasE=s.type==="ese_only";
+  let thScore=null,prScore=null,total=null,maxM=null,backlog=false;
+  if(hasT){const c=parseFloat(s.cieTh),e=parseFloat(s.eseTh);if(!isNaN(c)&&!isNaN(e)){thScore=c+e;if(c<24||e<16)backlog=true;}}
+  if(hasP){const c=parseFloat(s.ciePr),e=parseFloat(s.esePr);if(!isNaN(c)&&!isNaN(e)){prScore=c+e;if(c<24||e<16)backlog=true;}}
+  if(hasE){const e=parseFloat(s.eseOnly);if(!isNaN(e)){total=e;maxM=100;if(e<40)backlog=true;}}
+  if(s.type==="both"){if(thScore!==null&&prScore!==null){total=thScore+prScore;maxM=200;}}
+  else if(s.type==="theory"){if(thScore!==null){total=thScore;maxM=100;}}
+  else if(s.type==="practical"){if(prScore!==null){total=prScore;maxM=100;}}
+  if(total===null)return null;
+  const pct=Math.round((total/maxM)*100);
+  const g=gradeFor(pct);
+  if(g.grade==="F")backlog=true;
+  return{thScore,prScore,total,maxM,pct,credits:cr,grade:g.grade,pts:g.pts,backlog,gObj:g};
+}
+
+/* ══════════════ GET SUBJECT DATA FROM DOM ══════════════ */
+function getSubjectData(id){
+  const g=k=>{ const el=document.getElementById(`s${id}-${k}`); return el?el.value:""; };
+  return{
+    id,
+    code:g("code"), name:g("name"), credits:g("credits"), type:g("type"),
+    cieTh:g("cieTh"), eseTh:g("eseTh"),
+    ciePr:g("ciePr"), esePr:g("esePr"),
+    eseOnly:g("eseOnly"),
+  };
+}
+
+/* ══════════════ RENDER ONE CARD ══════════════ */
+function renderCard(id, data){
+  const existing = document.getElementById(`card-${id}`);
+  const type = data.type;
+  const hasT = type==="theory"||type==="both";
+  const hasP = type==="practical"||type==="both";
+  const hasE = type==="ese_only";
+  const r = compute(data);
+  const borderColor = r ? (r.backlog ? "#e05050" : r.gObj.bd) : "#ccc";
+
+  const theorySection = hasT ? `
+    <div class="section-label" style="color:#1565c0">Theory</div>
+    <table class="marks-table">
+      <thead>
+        <tr>
+          <th style="background:#ddeeff;width:22%"></th>
+          <th style="background:#ddeeff;width:19%">MAX</th>
+          <th style="background:#ddeeff;width:19%">MIN</th>
+          <th style="background:#ddeeff;width:40%">MARKS OBTAINED</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label" style="background:#eef5ff;color:#1565c0">CIE(TH)</td>
+          <td style="background:#f0f8ff"><span class="val">60</span></td>
+          <td style="background:#f0f8ff"><span class="min-val">24</span></td>
+          <td style="background:#fff">
+            <input id="s${id}-cieTh" type="number" min="0" max="60" value="${data.cieTh}"
+              placeholder="0–60" class="${parseFloat(data.cieTh)<24&&data.cieTh!==''?'warn':''}"
+              oninput="updateCard(${id})">
+            ${parseFloat(data.cieTh)<24&&data.cieTh!==''?'<div class="warn-msg">⚠ Below min (24)</div>':''}
+          </td>
+        </tr>
+        <tr>
+          <td class="row-label" style="background:#eef5ff;color:#1565c0">ESE(TH)</td>
+          <td style="background:#f0f8ff"><span class="val">40</span></td>
+          <td style="background:#f0f8ff"><span class="min-val">16</span></td>
+          <td style="background:#fff">
+            <input id="s${id}-eseTh" type="number" min="0" max="40" value="${data.eseTh}"
+              placeholder="0–40" class="${parseFloat(data.eseTh)<16&&data.eseTh!==''?'warn':''}"
+              oninput="updateCard(${id})">
+            ${parseFloat(data.eseTh)<16&&data.eseTh!==''?'<div class="warn-msg">⚠ Below min (16)</div>':''}
+          </td>
+        </tr>
+        ${r&&r.thScore!==null?`<tr class="subtotal-row">
+          <td colspan="2" style="background:#e8f4e8;color:#2e7d32;padding:6px 8px;">TH Total</td>
+          <td colspan="2" style="background:#e8f4e8;color:#2e7d32;font-size:14px;">${r.thScore} / 100</td>
+        </tr>`:''}
+      </tbody>
+    </table>` : '';
+
+  const practicalSection = hasP ? `
+    <div class="section-label" style="color:#2e7d32;margin-top:${hasT?'4px':'0'}">Practical</div>
+    <table class="marks-table">
+      <thead>
+        <tr>
+          <th style="background:#d4edda;width:22%"></th>
+          <th style="background:#d4edda;width:19%">MAX</th>
+          <th style="background:#d4edda;width:19%">MIN</th>
+          <th style="background:#d4edda;width:40%">MARKS OBTAINED</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label" style="background:#edfaf1;color:#2e7d32">CIE(PR)</td>
+          <td style="background:#f0faf4"><span class="val">60</span></td>
+          <td style="background:#f0faf4"><span class="min-val">24</span></td>
+          <td style="background:#fff">
+            <input id="s${id}-ciePr" type="number" min="0" max="60" value="${data.ciePr}"
+              placeholder="0–60" class="${parseFloat(data.ciePr)<24&&data.ciePr!==''?'warn':''}"
+              oninput="updateCard(${id})">
+            ${parseFloat(data.ciePr)<24&&data.ciePr!==''?'<div class="warn-msg">⚠ Below min (24)</div>':''}
+          </td>
+        </tr>
+        <tr>
+          <td class="row-label" style="background:#edfaf1;color:#2e7d32">ESE(PR)</td>
+          <td style="background:#f0faf4"><span class="val">40</span></td>
+          <td style="background:#f0faf4"><span class="min-val">16</span></td>
+          <td style="background:#fff">
+            <input id="s${id}-esePr" type="number" min="0" max="40" value="${data.esePr}"
+              placeholder="0–40" class="${parseFloat(data.esePr)<16&&data.esePr!==''?'warn':''}"
+              oninput="updateCard(${id})">
+            ${parseFloat(data.esePr)<16&&data.esePr!==''?'<div class="warn-msg">⚠ Below min (16)</div>':''}
+          </td>
+        </tr>
+        ${r&&r.prScore!==null?`<tr class="subtotal-row">
+          <td colspan="2" style="background:#e8f4e8;color:#2e7d32;padding:6px 8px;">PR Total</td>
+          <td colspan="2" style="background:#e8f4e8;color:#2e7d32;font-size:14px;">${r.prScore} / 100</td>
+        </tr>`:''}
+      </tbody>
+    </table>` : '';
+
+  const eseSection = hasE ? `
+    <div class="section-label" style="color:#e65100">ESE Only</div>
+    <table class="marks-table">
+      <thead>
+        <tr>
+          <th style="background:#fce8d4;width:22%"></th>
+          <th style="background:#fce8d4;width:19%">MAX</th>
+          <th style="background:#fce8d4;width:19%">MIN</th>
+          <th style="background:#fce8d4;width:40%">MARKS OBTAINED</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label" style="background:#fff5ee;color:#e65100">ESE</td>
+          <td style="background:#fff5ee"><span class="val">100</span></td>
+          <td style="background:#fff5ee"><span class="min-val">40</span></td>
+          <td style="background:#fff">
+            <input id="s${id}-eseOnly" type="number" min="0" max="100" value="${data.eseOnly}"
+              placeholder="0–100" oninput="updateCard(${id})">
+          </td>
+        </tr>
+      </tbody>
+    </table>` : '';
+
+  const resultBar = r ? `
+    <div class="result-bar" style="background:${r.gObj.bg};border:1px solid ${r.gObj.bd};">
+      <div class="result-total">
+        <span class="lbl">TOTAL:</span>
+        <span class="num" style="color:${r.gObj.fg}">${r.total}</span>
+        <span class="denom">/ ${r.maxM}</span>
+      </div>
+      <div class="result-right">
+        <div class="grade-box">
+          <div class="lbl">GRADE</div>
+          <div class="val" style="color:${r.gObj.fg}">${r.grade}</div>
+        </div>
+        <div class="grade-box">
+          <div class="lbl">GP</div>
+          <div class="val" style="color:${r.gObj.fg}">${r.pts}</div>
+        </div>
+        ${r.backlog?'<div class="backlog-tag">BACKLOG</div>':''}
+      </div>
+    </div>` : '';
+
+  const typeColor = TYPE_COLOR[type];
+  const cardHTML = `
+    <div class="subject-card" id="card-${id}" style="border-left-color:${borderColor}">
+      <div class="card-header">
+        <span class="sub-num">${String(subjects.indexOf(id)+1).padStart(2,'0')}</span>
+        <input class="inp-code" id="s${id}-code" value="${data.code}" placeholder="Code" oninput="updateCard(${id})">
+        <input class="inp-name" id="s${id}-name" value="${data.name}" placeholder="Subject Name" oninput="updateCard(${id})">
+        <span class="lbl-cr">CR:</span>
+        <input class="inp-credits" id="s${id}-credits" type="number" min="1" max="10" value="${data.credits}" oninput="updateCard(${id})">
+        <input type="hidden" id="s${id}-type" value="${type}">
+        <input type="hidden" id="s${id}-cieTh" value="${data.cieTh}">
+        <input type="hidden" id="s${id}-eseTh" value="${data.eseTh}">
+        <input type="hidden" id="s${id}-ciePr" value="${data.ciePr}">
+        <input type="hidden" id="s${id}-esePr" value="${data.esePr}">
+        <input type="hidden" id="s${id}-eseOnly" value="${data.eseOnly}">
+        <button class="type-btn" onclick="cycleType(${id})"
+          style="background:${typeColor}18;color:${typeColor};border:1px solid ${typeColor}44">
+          ${TYPE_LABEL[type]}
+        </button>
+        <button class="del-btn" onclick="deleteSubject(${id})">×</button>
+      </div>
+      <div class="card-body" id="card-body-${id}">
+        ${theorySection}
+        ${practicalSection}
+        ${eseSection}
+        ${resultBar}
+      </div>
+    </div>`;
+
+  if(existing){
+    existing.outerHTML = cardHTML;
+  } else {
+    document.getElementById('subjects-container').insertAdjacentHTML('beforeend', cardHTML);
+  }
+
+  // Re-attach real inputs (replacing hidden ones)
+  rebuildInputs(id, data);
+  updateSummary();
+}
+
+/* Re-build the actual visible inputs after card render */
+function rebuildInputs(id, data){
+  // The marks inputs are already in the DOM via the table HTML above
+  // Just need to make sure hidden type field is correct
+}
+
+/* ══════════════ CYCLE TYPE ══════════════ */
+function cycleType(id){
+  const el = document.getElementById(`s${id}-type`);
+  const i = TYPES.indexOf(el.value);
+  el.value = TYPES[(i+1)%TYPES.length];
+  const d = getSubjectData(id);
+  renderCard(id, d);
+}
+
+/* ══════════════ UPDATE CARD (on input change) ══════════════ */
+function updateCard(id){
+  const d = getSubjectData(id);
+  const r = compute(d);
+  const borderColor = r ? (r.backlog ? "#e05050" : r.gObj.bd) : "#ccc";
+  const card = document.getElementById(`card-${id}`);
+  if(card) card.style.borderLeftColor = borderColor;
+
+  // update warn classes on inputs
+  const fields = [
+    {key:"cieTh", min:24, hasF: d.type==="theory"||d.type==="both"},
+    {key:"eseTh", min:16, hasF: d.type==="theory"||d.type==="both"},
+    {key:"ciePr", min:24, hasF: d.type==="practical"||d.type==="both"},
+    {key:"esePr", min:16, hasF: d.type==="practical"||d.type==="both"},
+  ];
+  fields.forEach(f=>{
+    const inp = document.getElementById(`s${id}-${f.key}`);
+    if(!inp||!f.hasF) return;
+    const v = parseFloat(inp.value);
+    inp.classList.toggle("warn", !isNaN(v) && inp.value!=="" && v < f.min);
+  });
+
+  updateSummary();
+}
+
+/* ══════════════ UPDATE SUMMARY ══════════════ */
+function updateSummary(){
+  const tbody = document.getElementById('summary-body');
+  let rows = "";
+  let totalCr=0, wSum=0, backlogs=0, validCount=0;
+
+  subjects.forEach((id,idx)=>{
+    const d = getSubjectData(id);
+    const r = compute(d);
+    const gs = r ? GRADES.find(g=>g.grade===r.grade)||GRADES[GRADES.length-1] : null;
+    const thDisp = (d.type==="theory"||d.type==="both") && r && r.thScore!==null ? `${r.thScore}/100` : (d.type==="ese_only"&&r?`${r.total}/100`:"—");
+    const prDisp = (d.type==="practical"||d.type==="both") && r && r.prScore!==null ? `${r.prScore}/100` : "—";
+    rows += `<tr style="background:${idx%2===0?'#fff':'#fafafa'}">
+      <td class="td-code">${d.code||"—"}</td>
+      <td class="td-name">${d.name||"—"}</td>
+      <td>${d.credits}</td>
+      <td>${thDisp}</td>
+      <td>${prDisp}</td>
+      <td style="font-weight:700">${r?`${r.total}/${r.maxM}`:"—"}</td>
+      <td style="background:${gs?gs.bg:'#fff'};color:${gs?gs.fg:'#333'};font-weight:700">
+        ${r?r.grade:"—"}${r&&r.backlog?'<div style="font-size:8px;color:#c0392b">BACKLOG</div>':''}
+      </td>
+      <td style="font-weight:600">${r?r.pts:"—"}</td>
+    </tr>`;
+    if(r){
+      totalCr+=r.credits; wSum+=r.credits*r.pts; validCount++;
+      if(r.backlog) backlogs++;
+    }
+  });
+  tbody.innerHTML = rows;
+
+  const sgpa = totalCr>0 ? wSum/totalCr : 0;
+  const pass = backlogs===0 && validCount>0;
+
+  const setCell=(id,val,bg,fg)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.style.background=bg;
+    el.querySelector('.rc-val').textContent=val;
+    el.querySelector('.rc-val').style.color=fg;
+  };
+  setCell('rc-backlogs', backlogs, backlogs>0?'#ffc7ce':'#c6efce', backlogs>0?'#9c0006':'#276221');
+  setCell('rc-sgpa', validCount>0?sgpa.toFixed(2):'—', '#dae8fc','#1a3a6b');
+  setCell('rc-cgpa', validCount>0?sgpa.toFixed(2):'—', '#dae8fc','#1a3a6b');
+  setCell('rc-result', validCount===0?'—':pass?'PASS':'FAIL',
+    validCount===0?'#e8e8e8':pass?'#c6efce':'#ffc7ce',
+    validCount===0?'#888':pass?'#276221':'#9c0006');
+}
+
+/* ══════════════ ADD / DELETE ══════════════ */
+function addSubject(data){
+  const id = ++subjectIdCounter;
+  subjects.push(id);
+  const d = data || {code:"",name:"",credits:"3",type:"both",cieTh:"",eseTh:"",ciePr:"",esePr:"",eseOnly:""};
+  d.id = id;
+  renderCard(id, d);
+  // Re-number all cards
+  renumberCards();
+}
+
+function deleteSubject(id){
+  if(subjects.length<=1) return;
+  const idx = subjects.indexOf(id);
+  subjects.splice(idx,1);
+  const card = document.getElementById(`card-${id}`);
+  if(card) card.remove();
+  renumberCards();
+  updateSummary();
+}
+
+function renumberCards(){
+  subjects.forEach((id,idx)=>{
+    const numEl = document.querySelector(`#card-${id} .sub-num`);
+    if(numEl) numEl.textContent = String(idx+1).padStart(2,'0');
+  });
+}
+
+/* ══════════════ BUILD GRADE KEY ══════════════ */
+function buildGradeKey(){
+  const container = document.getElementById('grade-key');
+  container.innerHTML = GRADES.map(g=>
+    `<span style="background:${g.bg};color:${g.fg};border-color:${g.bd}">${g.grade} = ${g.pts}pts (${g.min}%+)</span>`
+  ).join('');
+}
+
+/* ══════════════ INIT ══════════════ */
+buildGradeKey();
+DEFAULT_DATA.forEach(d=>addSubject(d));
+</script>
+</body>
+</html>
